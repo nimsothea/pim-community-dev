@@ -118,9 +118,9 @@ class ProductSaver extends BaseProductSaver
             $this->updateDocuments($updateDocs);
         }
 
-        foreach ($products as $product) {
-            $this->completenessManager->generateMissingForProduct($product);
-        }
+//        foreach ($products as $product) {
+//            $this->completenessManager->generateMissingForProduct($product);
+//        }
 
         $versions = $this->bulkVersionBuilder->buildVersions($products);
         $this->versionSaver->saveAll($versions);

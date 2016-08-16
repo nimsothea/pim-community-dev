@@ -69,12 +69,12 @@ class ProductSaver implements SaverInterface, BulkSaverInterface
         $options = $this->optionsResolver->resolveSaveOptions($options);
         $this->eventDispatcher->dispatch(StorageEvents::PRE_SAVE, new GenericEvent($product, $options));
 
-        $this->completenessManager->schedule($product);
+//        $this->completenessManager->schedule($product);
         $this->objectManager->persist($product);
 
         if (true === $options['flush']) {
             $this->objectManager->flush();
-            $this->completenessManager->generateMissingForProduct($product);
+         //   $this->completenessManager->generateMissingForProduct($product);
         }
 
         $this->eventDispatcher->dispatch(StorageEvents::POST_SAVE, new GenericEvent($product, $options));
@@ -102,7 +102,7 @@ class ProductSaver implements SaverInterface, BulkSaverInterface
         $this->objectManager->flush();
 
         foreach ($products as $product) {
-            $this->completenessManager->generateMissingForProduct($product);
+          //  $this->completenessManager->generateMissingForProduct($product);
         }
 
         $this->eventDispatcher->dispatch(StorageEvents::POST_SAVE_ALL, new GenericEvent($products, $options));

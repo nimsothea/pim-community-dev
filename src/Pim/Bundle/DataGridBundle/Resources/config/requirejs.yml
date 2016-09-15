@@ -3,10 +3,13 @@ config:
         pim/fetcher-registry:
             fetchers:
                 datagrid-view:
-                    module: pim/base-fetcher
+                    module: pim/datagrid-view-fetcher
                     options:
                         urls:
                             list: pim_datagrid_view_rest_index
+                            get: pim_datagrid_view_rest_get
+                            columns: pim_datagrid_view_rest_default_columns
+                            userDefaultView: pim_datagrid_view_rest_default_user_view
 
     shim:
         backgrid:
@@ -103,6 +106,9 @@ config:
         oro/datafilter/filters-manager:             pimdatagrid/js/datafilter/filters-manager
         oro/datafilter/collection-filters-manager:  pimdatagrid/js/datafilter/collection-filters-manager
         oro/datafilter-builder:                     pimdatagrid/js/datafilter-builder
+
+        # Fetcher
+        pim/datagrid-view-fetcher: pimdatagrid/js/fetcher/datagrid-view-fetcher
 
         pim/template/datagrid/action-launcher-button:           pimdatagrid/templates/datagrid/action-launcher-button.html
         pim/template/datagrid/action-launcher-list-item:        pimdatagrid/templates/datagrid/action-launcher-list-item.html

@@ -36,9 +36,26 @@ define(
     ) {
         return BaseForm.extend({
             template: _.template(template),
-            resultsPerPage: 20,
+            resultsPerPage: 2,
             config: {},
+            defaultColumns: [],
+            defaultUserView: null,
             queryTimer: null,
+
+            /**
+             * {@inheritdoc}
+             */
+            configure: function () {
+                return $.when(
+                    FetcherRegistry.getFetcher('datagrid-view').defaultColumns('product-grid'),
+                    FetcherRegistry.getFetcher('datagrid-view').defaultUserView('product-grid')
+                ).then(function (columns, defaultView) {
+                    this.defaultColumns = columns[0];
+                    this.defaultUserView = defaultView[0].view;
+
+                    return BaseForm.prototype.configure.apply(this, arguments);
+                }.bind(this));
+            },
 
             /**
              * {@inheritdoc}
@@ -84,9 +101,13 @@ define(
                             FetcherRegistry.getFetcher('datagrid-view').search(searchParameters).then(function (views) {
                                 var choices = this.toSelect2Format(views);
 
+                                if (page === 1) {
+                                    choices = this.ensureDefaultView(choices);
+                                }
+
                                 options.callback({
                                     results: choices,
-                                    more: choices.length === this.resultsPerPage,
+                                    more: choices.length >= this.resultsPerPage,
                                     context: {
                                         page: page + 1
                                     }
@@ -94,6 +115,42 @@ define(
                             }.bind(this));
 
                         }.bind(this), 400);
+                    }.bind(this),
+
+                    /**
+                     * Initialize the select2 with current selected view. If no current view is selected,
+                     * we select the user's one. If he doesn't have one, we create one for him!
+                     */
+                    initSelection : function (element, callback) {
+                        var activeViewId = DatagridState.get('product-grid', 'view');
+                        var initView = null;
+                        var deferred = $.Deferred();
+
+                        if (activeViewId) {
+                            FetcherRegistry.getFetcher('datagrid-view').fetch(activeViewId, {alias: 'product-grid'}).then(function (view) {
+                                view.text = view.label;
+
+                                deferred.resolve(view);
+                            });
+                        } else if (initView) {
+                            initView = this.defaultUserView;
+                            initView.text = initView.label;
+
+                            deferred.resolve(initView);
+                        } else {
+                            initView = {
+                                id: 0,
+                                text: 'Default view',   // TODO: translation
+                                order: this.defaultColumns,
+                                filters: ''
+                            };
+
+                            deferred.resolve(initView);
+                        }
+
+                        deferred.then(function (initView) {
+                            callback(initView);
+                        });
                     }.bind(this)
                 };
 
@@ -118,6 +175,28 @@ define(
             },
 
             /**
+             * Ensure given choices contain a default view if user doesn't have one.
+             *
+             * @param choices
+             *
+             * @return {array}
+             */
+            ensureDefaultView: function (choices) {
+                if (null !== this.defaultUserView) {
+                    return choices;
+                }
+
+                choices.push({
+                    id: 0,
+                    text: 'Default view',   // TODO: translation
+                    order: this.defaultColumns,
+                    filters: ''
+                });
+
+                return choices;
+            },
+
+            /**
              * Get grid view fetcher search parameters by giving select2 search term & page
              *
              * @param {string} term
@@ -128,7 +207,7 @@ define(
             getSelectSearchParameters: function (term, page) {
                 return $.extend(true, {}, this.config.searchParameters, {
                     search: term,
-                    gridAlias: 'product-grid',
+                    alias: 'product-grid',
                     options: {
                         limit: this.resultsPerPage,
                         page: page

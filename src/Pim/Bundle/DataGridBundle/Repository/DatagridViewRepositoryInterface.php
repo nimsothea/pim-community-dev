@@ -2,6 +2,7 @@
 
 namespace Pim\Bundle\DataGridBundle\Repository;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Pim\Bundle\UserBundle\Entity\UserInterface;
 
 /**
@@ -29,4 +30,18 @@ interface DatagridViewRepositoryInterface
      * @param string        $alias
      */
     public function findDatagridViewByUserAndAlias(UserInterface $user, $alias);
+
+    /**
+     * Search datagrid views for the given $user and grid $alias.
+     * The search is applied with the given $term.
+     * You can pass $options to add limit or page informations.
+     *
+     * @param string        $term
+     * @param UserInterface $user
+     * @param string        $alias
+     * @param array         $options
+     *
+     * @return ArrayCollection
+     */
+    public function findDatagridViewBySearch($term, UserInterface $user, $alias, array $options = []);
 }

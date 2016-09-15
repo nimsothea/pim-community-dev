@@ -33,11 +33,34 @@
     <i class="icon-plus" data-toggle="tooltip" data-placement="right" data-original-title="{{ 'datagrid_view.create'|trans }}"></i>
 </a>
 
+<div id="view-selector-test"></div>
+
 {{ form_start(form, { attr: { class: 'hide' } }) }}
     {{ form_widget(form.label) }}
     {{ form_widget(form.filters) }}
     {{ form_widget(form.order) }}
 {{ form_end(form) }}
+
+<script>
+    require(
+        [
+            'pim/fetcher-registry',
+            'pim/form-builder'
+        ],
+        function(
+            FetcherRegistry,
+            FormBuilder
+        ) {
+            $(function() {
+                FetcherRegistry.initialize().done(function () {
+                    FormBuilder.build('pim-grid-view-selector').then(function (form) {
+                        form.setElement('#view-selector-test').render();
+                    });
+                });
+            });
+        }
+    );
+</script>
 
 <script type="text/javascript">
 require(

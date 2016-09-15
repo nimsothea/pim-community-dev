@@ -1,3 +1,8 @@
+pim_datagrid_view_rest_index:
+    path: /rest
+    defaults: { _controller: pim_datagrid.controller.rest.datagrid_view:indexAction }
+    methods: [GET]
+
 pim_datagrid_view_index:
     path: /{alias}/{id}
     defaults: { _controller: pim_datagrid.controller.datagrid_view:indexAction, id: ~ }

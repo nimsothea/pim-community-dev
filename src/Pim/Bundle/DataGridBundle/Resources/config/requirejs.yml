@@ -1,4 +1,13 @@
 config:
+    config:
+        pim/fetcher-registry:
+            fetchers:
+                datagrid-view:
+                    module: pim/base-fetcher
+                    options:
+                        urls:
+                            list: pim_datagrid_view_rest_index
+
     shim:
         backgrid:
             deps:

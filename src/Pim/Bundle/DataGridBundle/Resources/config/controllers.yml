@@ -60,3 +60,6 @@ services:
             - '@pim_datagrid.repository.datagrid_view'
             - '@security.token_storage'
             - '@pim_datagrid.manager.datagrid_view'
+            - '@pim_datagrid.saver.datagrid_view'
+            - '@validator'
+            - '@translator'

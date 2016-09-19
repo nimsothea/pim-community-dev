@@ -5,6 +5,9 @@ extensions:
     pim-grid-view-selector-line:
         module: pim/grid/view-selector-line
 
+    pim-grid-view-selector-current:
+        module: pim/grid/view-selector-current
+
     # TEST
     pim-grid-view-selector-line-before:
         module: pim/grid/view-selector-line-before

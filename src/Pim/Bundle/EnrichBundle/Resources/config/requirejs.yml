@@ -324,6 +324,7 @@ config:
         pim/grid/view-selector-add: pimenrich/js/grid/view-selector-add
         pim/grid/view-selector-remove: pimenrich/js/grid/view-selector-remove
         pim/grid/view-selector-save: pimenrich/js/grid/view-selector-save
+        pim/grid/view-selector-current: pimenrich/js/grid/view-selector-current
 
         # Templates
         pim/template/form/group-selector:                         pimenrich/templates/form/group-selector.html
@@ -427,3 +428,4 @@ config:
         pim/template/grid/view-selector-add: pimenrich/templates/grid/view-selector-add.html
         pim/template/grid/view-selector-remove: pimenrich/templates/grid/view-selector-remove.html
         pim/template/grid/view-selector-save: pimenrich/templates/grid/view-selector-save.html
+        pim/template/grid/view-selector-current: pimenrich/templates/grid/view-selector-current.html

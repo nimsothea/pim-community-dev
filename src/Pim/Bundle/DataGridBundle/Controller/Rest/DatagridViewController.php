@@ -2,12 +2,16 @@
 
 namespace Pim\Bundle\DataGridBundle\Controller\Rest;
 
+use Akeneo\Component\StorageUtils\Saver\SaverInterface;
+use Pim\Bundle\DataGridBundle\Entity\DatagridView;
 use Pim\Bundle\DataGridBundle\Manager\DatagridViewManager;
 use Pim\Bundle\DataGridBundle\Repository\DatagridViewRepositoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Datagrid views REST controller
@@ -30,22 +34,40 @@ class DatagridViewController
     /** @var DatagridViewManager */
     protected $datagridViewManager;
 
+    /** @var SaverInterface */
+    protected $saver;
+
+    /** @var ValidatorInterface */
+    protected $validator;
+
+    /** @var TranslatorInterface */
+    protected $translator;
+
     /**
      * @param NormalizerInterface             $normalizer
      * @param DatagridViewRepositoryInterface $datagridViewRepo
      * @param TokenStorageInterface           $tokenStorage
      * @param DatagridViewManager             $datagridViewManager
+     * @param SaverInterface                  $saver
+     * @param ValidatorInterface              $validator
+     * @param TranslatorInterface             $translator
      */
     public function __construct(
         NormalizerInterface $normalizer,
         DatagridViewRepositoryInterface $datagridViewRepo,
         TokenStorageInterface $tokenStorage,
-        DatagridViewManager $datagridViewManager
+        DatagridViewManager $datagridViewManager,
+        SaverInterface $saver,
+        ValidatorInterface $validator,
+        TranslatorInterface $translator
     ) {
         $this->normalizer = $normalizer;
         $this->datagridViewRepo = $datagridViewRepo;
         $this->tokenStorage = $tokenStorage;
         $this->datagridViewManager = $datagridViewManager;
+        $this->saver = $saver;
+        $this->validator = $validator;
+        $this->translator = $translator;
     }
 
     /**
@@ -89,6 +111,47 @@ class DatagridViewController
     }
 
     /**
+     * @param Request $request
+     * @param string  $alias
+     *
+     * @return JsonResponse
+     */
+    public function saveAction(Request $request, $alias)
+    {
+        $user = $this->tokenStorage->getToken()->getUser();
+        $view = $request->request->get('view', null);
+
+        if (null === $view) {
+            return new JsonResponse();
+        }
+
+        if (isset($view['id'])) {
+            // Save existing view
+        } else {
+            $datagridView = new DatagridView();
+            $datagridView->setOwner($user);
+            $datagridView->setDatagridAlias($alias);
+            $datagridView->setColumns(explode(',', $view['columns']));
+            $datagridView->setFilters($view['filters']);
+            $datagridView->setLabel($view['label']);
+
+            $violations = $this->validator->validate($datagridView);
+            if ($violations->count()) {
+                $messages = [];
+                foreach ($violations as $violation) {
+                    $messages[] = $this->translator->trans($violation->getMessage());
+                }
+
+                return new JsonResponse(['errors' => $messages]);
+            } else {
+                $this->saver->save($datagridView);
+
+                return new JsonResponse(['id' => $datagridView->getId()]);
+            }
+        }
+    }
+
+    /**
      * Get the default view columns for a grid.
      *
      * @param Request $request
@@ -106,12 +169,11 @@ class DatagridViewController
     /**
      * Get the default datagrid view for current user.
      *
-     * @param Request $request
-     * @param string  $alias
+     * @param string $alias
      *
      * @return JsonResponse
      */
-    public function getUserDefaultDatagridView(Request $request, $alias)
+    public function getUserDefaultDatagridViewAction($alias)
     {
         $user = $this->tokenStorage->getToken()->getUser();
         $view = $user->getDefaultGridView($alias);

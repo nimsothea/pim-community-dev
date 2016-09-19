@@ -3,11 +3,6 @@ pim_datagrid_view_rest_index:
     defaults: { _controller: pim_datagrid.controller.rest.datagrid_view:indexAction }
     methods: [GET]
 
-pim_datagrid_view_rest_get:
-    path: /rest/{alias}/{identifier}
-    defaults: { _controller: pim_datagrid.controller.rest.datagrid_view:getAction }
-    methods: [GET]
-
 pim_datagrid_view_rest_default_columns:
     path: /rest/{alias}/columns
     defaults: { _controller: pim_datagrid.controller.rest.datagrid_view:defaultViewColumnsAction }
@@ -15,7 +10,17 @@ pim_datagrid_view_rest_default_columns:
 
 pim_datagrid_view_rest_default_user_view:
     path: /rest/{alias}/default
-    defaults: { _controller: pim_datagrid.controller.rest.datagrid_view:getUserDefaultDatagridView }
+    defaults: { _controller: pim_datagrid.controller.rest.datagrid_view:getUserDefaultDatagridViewAction }
+    methods: [GET]
+
+pim_datagrid_view_rest_save:
+    path: /rest/{alias}
+    defaults: { _controller: pim_datagrid.controller.rest.datagrid_view:saveAction }
+    methods: [POST]
+
+pim_datagrid_view_rest_get:
+    path: /rest/{alias}/{identifier}
+    defaults: { _controller: pim_datagrid.controller.rest.datagrid_view:getAction }
     methods: [GET]
 
 pim_datagrid_view_index:

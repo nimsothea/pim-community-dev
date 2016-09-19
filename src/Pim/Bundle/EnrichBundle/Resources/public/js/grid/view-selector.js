@@ -19,7 +19,8 @@ define(
         'pim/initselect2',
         'pim/datagrid/state',
         'pim/fetcher-registry',
-        'pim/form-builder'
+        'pim/form-builder',
+        'oro/mediator'
     ],
     function (
         $,
@@ -32,20 +33,25 @@ define(
         initSelect2,
         DatagridState,
         FetcherRegistry,
-        FormBuilder
+        FormBuilder,
+        mediator
     ) {
         return BaseForm.extend({
             template: _.template(template),
-            resultsPerPage: 2,
+            resultsPerPage: 20,
+            queryTimer: null,
             config: {},
+            currentView: null,
             defaultColumns: [],
             defaultUserView: null,
-            queryTimer: null,
 
             /**
              * {@inheritdoc}
              */
             configure: function () {
+                mediator.bind('grid:product-grid:state_changed', this.onGridStateChange.bind(this));
+                this.listenTo(this.getRoot(), 'grid:product-grid:set-new-view', this.onSetNewView.bind(this));
+
                 return $.when(
                     FetcherRegistry.getFetcher('datagrid-view').defaultColumns('product-grid'),
                     FetcherRegistry.getFetcher('datagrid-view').defaultUserView('product-grid')
@@ -85,7 +91,20 @@ define(
                             return form.configure(item).then(function () {
                                 $container.append(form.render().$el);
                             });
-                        });
+                        }.bind(this));
+                    }.bind(this),
+
+                    /**
+                     * Format current selection method of select2.
+                     */
+                    formatSelection: function (item, $container) {
+                        FormBuilder.buildForm('pim-grid-view-selector-current').then(function (form) {
+                            form.setParent(this);
+                            return form.configure(item).then(function () {
+                                $container.append(form.render().$el);
+                                this.onGridStateChange();
+                            }.bind(this));
+                        }.bind(this));
                     }.bind(this),
 
                     query: function (options) {
@@ -128,29 +147,26 @@ define(
 
                         if (activeViewId) {
                             FetcherRegistry.getFetcher('datagrid-view').fetch(activeViewId, {alias: 'product-grid'}).then(function (view) {
-                                view.text = view.label;
-
-                                deferred.resolve(view);
-                            });
+                                if (_.has(view, 'id')) {
+                                    view.text = view.label;
+                                    deferred.resolve(view);
+                                } else {
+                                    deferred.resolve(this.getDefaultView());
+                                }
+                            }.bind(this));
                         } else if (initView) {
                             initView = this.defaultUserView;
                             initView.text = initView.label;
 
                             deferred.resolve(initView);
                         } else {
-                            initView = {
-                                id: 0,
-                                text: 'Default view',   // TODO: translation
-                                order: this.defaultColumns,
-                                filters: ''
-                            };
-
-                            deferred.resolve(initView);
+                            deferred.resolve(this.getDefaultView());
                         }
 
                         deferred.then(function (initView) {
+                            this.currentView = initView;
                             callback(initView);
-                        });
+                        }.bind(this));
                     }.bind(this)
                 };
 
@@ -161,17 +177,22 @@ define(
                 $select.on('select2-selecting', function (event) {
                     var view = event.object;
 
-                    DatagridState.set('product-grid', {
-                        view: view.id,
-                        filters: view.filters,
-                        columns: view.order
-                    });
-
-                    // Reload page
-                    var url = window.location.hash;
-                    Backbone.history.fragment = new Date().getTime();
-                    Backbone.history.navigate(url, true);
+                    this.selectView(view);
                 }.bind(this));
+            },
+
+            /**
+             * Return the default view object which contains default columns & no filter.
+             *
+             * @returns {Object}
+             */
+            getDefaultView: function () {
+                return {
+                    id: 0,
+                    text: 'Default view',   // TODO: translation
+                    order: this.defaultColumns,
+                    filters: ''
+                };
             },
 
             /**
@@ -194,6 +215,45 @@ define(
                 });
 
                 return choices;
+            },
+
+            /**
+             * Method called when the grid state changes.
+             * It allows this selector to react to new filters / columns etc..
+             */
+            onGridStateChange: function () {
+                var datagridState = DatagridState.get('product-grid', ['filters', 'columns']);
+
+                this.getRoot().trigger('datagrid-view:selector:state-changed', datagridState);
+            },
+
+            /**
+             * Method called when a new view has been created.
+             * This method fetches the newly created view thanks to its id, then selects it.
+             *
+             * @param {int} viewId
+             */
+            onSetNewView: function (viewId) {
+                FetcherRegistry.getFetcher('datagrid-view').fetch(viewId, {alias: 'product-grid'}).then(function (view) {
+                    this.selectView(view);
+                }.bind(this));
+            },
+
+            /**
+             * Method called when the user selects a view through this selector.
+             *
+             * @param view The selected view
+             */
+            selectView: function (view) {
+                DatagridState.set('product-grid', {
+                    view: view.id,
+                    filters: view.filters,
+                    columns: view.order
+                });
+
+                this.currentView = view;
+                this.trigger('datagrid-view:selector:view-selected', view);
+                this.reloadPage();
             },
 
             /**
@@ -229,6 +289,15 @@ define(
 
                     return view;
                 });
+            },
+
+            /**
+             * Reload the page.
+             */
+            reloadPage: function () {
+                var url = window.location.hash;
+                Backbone.history.fragment = new Date().getTime();
+                Backbone.history.navigate(url, true);
             }
         });
     }

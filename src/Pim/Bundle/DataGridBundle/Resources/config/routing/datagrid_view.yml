@@ -18,6 +18,11 @@ pim_datagrid_view_rest_save:
     defaults: { _controller: pim_datagrid.controller.rest.datagrid_view:saveAction }
     methods: [POST]
 
+pim_datagrid_view_rest_remove:
+    path: /rest/{identifier}
+    defaults: { _controller: pim_datagrid.controller.rest.datagrid_view:removeAction }
+    methods: [DELETE]
+
 pim_datagrid_view_rest_get:
     path: /rest/{alias}/{identifier}
     defaults: { _controller: pim_datagrid.controller.rest.datagrid_view:getAction }

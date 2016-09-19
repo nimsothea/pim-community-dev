@@ -49,6 +49,9 @@ define(
                 this.$el.html(this.template());
             },
 
+            /**
+             * Prompt the datagrid view creation modal.
+             */
             promptCreation: function () {
                 var content = '<input name="label" id="view-label" type="text" placeholder="Name of new view">';
                 var label = null;
@@ -74,6 +77,10 @@ define(
                 });
             },
 
+            /**
+             * Save the current Datagrid view in database and triggers an event to the parent
+             * to select it.
+             */
             saveView: function () {
                 var gridAlias = 'product-grid';
                 var gridState = DatagridState.get(gridAlias, ['filters', 'columns']);
@@ -81,17 +88,12 @@ define(
                 var newView = {filters: gridState.filters, columns: gridState.columns, label: $('#view-label').val()};
 
                 $.post(saveRoute, {view: newView}, function (response) {
-                    _.each(response.errors, function(error) {
-                        messenger.notificationFlashMessage('error', error);
-                    });
-
                     if (response && response.errors && response.errors.length) {
                         _.each(response.errors, function(error) {
                             messenger.notificationFlashMessage('error', error);
                         })
                     } else if (response && response.id) {
-                        //DatagridState.set('product-grid', 'view', response.id);
-                        this.getRoot().trigger('grid:product-grid:set-new-view', response.id);
+                        this.getRoot().trigger('grid:product-grid:view-created', response.id);
                     }
                 }.bind(this));
             }

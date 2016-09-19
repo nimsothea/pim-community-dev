@@ -6,6 +6,8 @@ use Akeneo\Component\StorageUtils\Saver\SaverInterface;
 use Pim\Bundle\DataGridBundle\Entity\DatagridView;
 use Pim\Bundle\DataGridBundle\Manager\DatagridViewManager;
 use Pim\Bundle\DataGridBundle\Repository\DatagridViewRepositoryInterface;
+use Pim\Bundle\EnrichBundle\Exception\DeleteException;
+use Pim\Bundle\EnrichBundle\Flash\Message;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -146,9 +148,36 @@ class DatagridViewController
             } else {
                 $this->saver->save($datagridView);
 
+                $request->getSession()->getFlashBag()
+                    ->add('success', new Message('flash.datagrid view.created'));
+
                 return new JsonResponse(['id' => $datagridView->getId()]);
             }
         }
+    }
+
+    /**
+     * Remove a datagrid view
+     *
+     * @param Request $request
+     * @param string  $identifier
+     *
+     * @return JsonResponse
+     */
+    public function removeAction(Request $request, $identifier)
+    {
+        $user = $this->tokenStorage->getToken()->getUser();
+        $view = $this->datagridViewRepo->findOneBy(['owner' => $user, 'id' => $identifier]);
+
+        if ($view === null) {
+            return new JsonResponse(['error' => $this->translator->trans('flash.datagrid view.not removable')], 404);
+        }
+
+        $this->datagridViewManager->remove($view);
+        $request->getSession()->getFlashBag()
+            ->add('success', new Message('flash.datagrid view.removed'));
+
+        return new JsonResponse('', 204);
     }
 
     /**

@@ -52,6 +52,7 @@ define(
                 mediator.bind('grid:product-grid:state_changed', this.onGridStateChange.bind(this));
 
                 this.listenTo(this.getRoot(), 'grid:product-grid:view-created', this.onViewCreated.bind(this));
+                this.listenTo(this.getRoot(), 'grid:product-grid:view-saved', this.onViewSaved.bind(this));
                 this.listenTo(this.getRoot(), 'grid:product-grid:view-removed', this.onViewRemoved.bind(this));
 
                 return $.when(
@@ -237,6 +238,20 @@ define(
              * @param {int} viewId
              */
             onViewCreated: function (viewId) {
+                FetcherRegistry.getFetcher('datagrid-view').clear();
+                FetcherRegistry.getFetcher('datagrid-view').fetch(viewId, {alias: 'product-grid'}).then(function (view) {
+                    this.selectView(view);
+                }.bind(this));
+            },
+
+            /**
+             * Method called when a view has been saved.
+             * This method fetches the saved view thanks to its id, then selects it.
+             *
+             * @param {int} viewId
+             */
+            onViewSaved: function (viewId) {
+                FetcherRegistry.getFetcher('datagrid-view').clear();
                 FetcherRegistry.getFetcher('datagrid-view').fetch(viewId, {alias: 'product-grid'}).then(function (view) {
                     this.selectView(view);
                 }.bind(this));
@@ -247,6 +262,7 @@ define(
              * We reset all filters on the grid.
              */
             onViewRemoved: function () {
+                FetcherRegistry.getFetcher('datagrid-view').clear();
                 this.selectView(this.getDefaultView());
             },
 

@@ -122,37 +122,42 @@ class DatagridViewController
     {
         $user = $this->tokenStorage->getToken()->getUser();
         $view = $request->request->get('view', null);
+        $creation = true;
 
         if (null === $view) {
             return new JsonResponse();
         }
 
         if (isset($view['id'])) {
-            // Save existing view
+            $creation = false;
+            $datagridView = $this->datagridViewRepo->find($view['id']);
         } else {
             $datagridView = new DatagridView();
             $datagridView->setOwner($user);
             $datagridView->setDatagridAlias($alias);
-            $datagridView->setColumns(explode(',', $view['columns']));
-            $datagridView->setFilters($view['filters']);
             $datagridView->setLabel($view['label']);
+        }
 
-            $violations = $this->validator->validate($datagridView);
-            if ($violations->count()) {
-                $messages = [];
-                foreach ($violations as $violation) {
-                    $messages[] = $this->translator->trans($violation->getMessage());
-                }
+        $datagridView->setColumns(explode(',', $view['columns']));
+        $datagridView->setFilters($view['filters']);
+        $violations = $this->validator->validate($datagridView);
 
-                return new JsonResponse(['errors' => $messages]);
-            } else {
-                $this->saver->save($datagridView);
+        if ($violations->count()) {
+            $messages = [];
+            foreach ($violations as $violation) {
+                $messages[] = $this->translator->trans($violation->getMessage());
+            }
 
+            return new JsonResponse(['errors' => $messages]);
+        } else {
+            $this->saver->save($datagridView);
+
+            if ($creation) {
                 $request->getSession()->getFlashBag()
                     ->add('success', new Message('flash.datagrid view.created'));
-
-                return new JsonResponse(['id' => $datagridView->getId()]);
             }
+
+            return new JsonResponse(['id' => $datagridView->getId()]);
         }
     }
 

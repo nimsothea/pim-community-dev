@@ -82,7 +82,7 @@ define(
              * to select it.
              */
             saveView: function () {
-                var gridAlias = 'product-grid';
+                var gridAlias = this.getRoot().gridAlias;
                 var gridState = DatagridState.get(gridAlias, ['filters', 'columns']);
                 var saveRoute = Routing.generate('pim_datagrid_view_rest_save', {alias: gridAlias});
                 var newView = {filters: gridState.filters, columns: gridState.columns, label: $('#view-label').val()};
@@ -93,7 +93,7 @@ define(
                             messenger.notificationFlashMessage('error', error);
                         })
                     } else if (response && response.id) {
-                        this.getRoot().trigger('grid:product-grid:view-created', response.id);
+                        this.getRoot().trigger('grid:view-selector:view-created', response.id);
                     }
                 }.bind(this));
             }

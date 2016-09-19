@@ -31,7 +31,7 @@ define(
             configure: function (datagridView) {
                 this.datagridView = datagridView;
 
-                this.listenTo(this.getRoot(), 'datagrid-view:selector:state-changed', this.onDatagridStateChange);
+                this.listenTo(this.getRoot(), 'grid:view-selector:state-changed', this.onDatagridStateChange);
 
                 return BaseForm.prototype.configure.apply(this, arguments);
             },

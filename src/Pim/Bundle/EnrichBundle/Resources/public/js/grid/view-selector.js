@@ -44,20 +44,23 @@ define(
             currentView: null,
             defaultColumns: [],
             defaultUserView: null,
+            gridAlias: null,
 
             /**
              * {@inheritdoc}
              */
-            configure: function () {
+            configure: function (gridAlias) {
+                this.gridAlias = gridAlias;
+
                 mediator.bind('grid:product-grid:state_changed', this.onGridStateChange.bind(this));
 
-                this.listenTo(this.getRoot(), 'grid:product-grid:view-created', this.onViewCreated.bind(this));
-                this.listenTo(this.getRoot(), 'grid:product-grid:view-saved', this.onViewSaved.bind(this));
-                this.listenTo(this.getRoot(), 'grid:product-grid:view-removed', this.onViewRemoved.bind(this));
+                this.listenTo(this.getRoot(), 'grid:view-selector:view-created', this.onViewCreated.bind(this));
+                this.listenTo(this.getRoot(), 'grid:view-selector:view-saved', this.onViewSaved.bind(this));
+                this.listenTo(this.getRoot(), 'grid:view-selector:view-removed', this.onViewRemoved.bind(this));
 
                 return $.when(
-                    FetcherRegistry.getFetcher('datagrid-view').defaultColumns('product-grid'),
-                    FetcherRegistry.getFetcher('datagrid-view').defaultUserView('product-grid')
+                    FetcherRegistry.getFetcher('datagrid-view').defaultColumns(this.gridAlias),
+                    FetcherRegistry.getFetcher('datagrid-view').defaultUserView(this.gridAlias)
                 ).then(function (columns, defaultView) {
                     this.defaultColumns = columns[0];
                     this.defaultUserView = defaultView[0].view;
@@ -144,19 +147,20 @@ define(
                      * we select the user's one. If he doesn't have one, we create one for him!
                      */
                     initSelection : function (element, callback) {
-                        var activeViewId = DatagridState.get('product-grid', 'view');
+                        var activeViewId = DatagridState.get(this.gridAlias, 'view');
                         var initView = null;
                         var deferred = $.Deferred();
 
                         if (activeViewId) {
-                            FetcherRegistry.getFetcher('datagrid-view').fetch(activeViewId, {alias: 'product-grid'}).then(function (view) {
-                                if (_.has(view, 'id')) {
-                                    view.text = view.label;
-                                    deferred.resolve(view);
-                                } else {
-                                    deferred.resolve(this.getDefaultView());
-                                }
-                            }.bind(this));
+                            FetcherRegistry.getFetcher('datagrid-view').fetch(activeViewId, {alias: this.gridAlias})
+                                .then(function (view) {
+                                    if (_.has(view, 'id')) {
+                                        view.text = view.label;
+                                        deferred.resolve(view);
+                                    } else {
+                                        deferred.resolve(this.getDefaultView());
+                                    }
+                                }.bind(this));
                         } else if (initView) {
                             initView = this.defaultUserView;
                             initView.text = initView.label;
@@ -169,7 +173,7 @@ define(
                         deferred.then(function (initView) {
                             this.currentView = initView;
                             callback(initView);
-                            this.getRoot().trigger('datagrid-view:selector:initialized', initView);
+                            this.getRoot().trigger('grid:view-selector:initialized', initView);
                         }.bind(this));
                     }.bind(this)
                 };
@@ -226,9 +230,9 @@ define(
              * It allows this selector to react to new filters / columns etc..
              */
             onGridStateChange: function () {
-                var datagridState = DatagridState.get('product-grid', ['filters', 'columns']);
+                var datagridState = DatagridState.get(this.gridAlias, ['filters', 'columns']);
 
-                this.getRoot().trigger('datagrid-view:selector:state-changed', datagridState);
+                this.getRoot().trigger('grid:view-selector:state-changed', datagridState);
             },
 
             /**
@@ -239,7 +243,7 @@ define(
              */
             onViewCreated: function (viewId) {
                 FetcherRegistry.getFetcher('datagrid-view').clear();
-                FetcherRegistry.getFetcher('datagrid-view').fetch(viewId, {alias: 'product-grid'}).then(function (view) {
+                FetcherRegistry.getFetcher('datagrid-view').fetch(viewId, {alias: this.gridAlias}).then(function (view) {
                     this.selectView(view);
                 }.bind(this));
             },
@@ -252,7 +256,7 @@ define(
              */
             onViewSaved: function (viewId) {
                 FetcherRegistry.getFetcher('datagrid-view').clear();
-                FetcherRegistry.getFetcher('datagrid-view').fetch(viewId, {alias: 'product-grid'}).then(function (view) {
+                FetcherRegistry.getFetcher('datagrid-view').fetch(viewId, {alias: this.gridAlias}).then(function (view) {
                     this.selectView(view);
                 }.bind(this));
             },
@@ -272,14 +276,14 @@ define(
              * @param view The selected view
              */
             selectView: function (view) {
-                DatagridState.set('product-grid', {
+                DatagridState.set(this.gridAlias, {
                     view: view.id,
                     filters: view.filters,
                     columns: view.order
                 });
 
                 this.currentView = view;
-                this.trigger('datagrid-view:selector:view-selected', view);
+                this.trigger('grid:view-selector:view-selected', view);
                 this.reloadPage();
             },
 
@@ -294,7 +298,7 @@ define(
             getSelectSearchParameters: function (term, page) {
                 return $.extend(true, {}, this.config.searchParameters, {
                     search: term,
-                    alias: 'product-grid',
+                    alias: this.gridAlias,
                     options: {
                         limit: this.resultsPerPage,
                         page: page

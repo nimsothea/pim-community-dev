@@ -53,9 +53,11 @@
         ) {
             $(function() {
                 FetcherRegistry.initialize().done(function () {
-                    FormBuilder.build('pim-grid-view-selector').then(function (form) {
-                        form.setElement('#view-selector-test').render();
-                    });
+                    FormBuilder.buildForm('pim-grid-view-selector').then(function (form) {
+                        return form.configure('{{ alias }}').then(function () {
+                            form.setElement('#view-selector-test').render();
+                        });
+                    }.bind(this));
                 });
             });
         }

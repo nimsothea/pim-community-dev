@@ -40,7 +40,7 @@ define(
              * {@inheritdoc}
              */
             configure: function () {
-                this.listenTo(this.getRoot(), 'datagrid-view:selector:initialized', this.onSelectorInitialized.bind(this));
+                this.listenTo(this.getRoot(), 'grid:view-selector:initialized', this.onSelectorInitialized.bind(this));
 
                 return BaseForm.prototype.configure.apply(this, arguments);
             },
@@ -84,7 +84,7 @@ define(
                     url: removeRoute,
                     type: 'DELETE',
                     success: function() {
-                        this.getRoot().trigger('grid:product-grid:view-removed');
+                        this.getRoot().trigger('grid:view-selector:view-removed');
                     }.bind(this),
                     error: function (response) {
                         if (_.has(response, 'responseJSON') && _.has(response.responseJSON, 'error')) {

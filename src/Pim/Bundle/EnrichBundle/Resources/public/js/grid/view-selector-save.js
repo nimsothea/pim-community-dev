@@ -41,7 +41,7 @@ define(
              * {@inheritdoc}
              */
             configure: function () {
-                this.listenTo(this.getRoot(), 'datagrid-view:selector:state-changed', this.onDatagridStateChange);
+                this.listenTo(this.getRoot(), 'grid:view-selector:state-changed', this.onDatagridStateChange);
 
                 return BaseForm.prototype.configure.apply(this, arguments);
             },
@@ -74,7 +74,7 @@ define(
              * to select it.
              */
             saveView: function () {
-                var gridAlias = 'product-grid';
+                var gridAlias = this.getRoot().gridAlias;
                 var gridState = DatagridState.get(gridAlias, ['filters', 'columns']);
                 var saveRoute = Routing.generate('pim_datagrid_view_rest_save', {alias: gridAlias});
                 var currentView = _.extend({}, this.getRoot().currentView);
@@ -87,7 +87,7 @@ define(
                             messenger.notificationFlashMessage('error', error);
                         })
                     } else if (response && response.id) {
-                        this.getRoot().trigger('grid:product-grid:view-saved', response.id);
+                        this.getRoot().trigger('grid:view-selector:view-saved', response.id);
                     }
                 }.bind(this));
             }

@@ -1,7 +1,9 @@
 'use strict';
 
 /**
- * View selector for datagrid
+ * Save extension for the Datagrid View Selector.
+ * It displays a button near the selector to allow the user to save the actual modifications
+ * to the current view.
  *
  * @author    Adrien Pétremann <adrien.petremann@akeneo.com>
  * @copyright 2016 Akeneo SAS (http://www.akeneo.com)
@@ -62,11 +64,15 @@ define(
              */
             onDatagridStateChange: function (datagridState) {
                 var currentView = this.getRoot().currentView;
-                var currentViewExists = null !== currentView && 0 != currentView.id;
-                var filtersModified = currentView.filters != datagridState.filters || currentView.order != datagridState.columns;
+                var currentViewExists = null !== currentView && 0 !== currentView.id;
 
-                this.dirty = currentViewExists && filtersModified;
-                this.render();
+                if (currentViewExists) {
+                    var filtersModified = currentView.filters !== datagridState.filters;
+                    var columnsModified = currentView.columnsOrder !== datagridState.columns;
+
+                    this.dirty = filtersModified || columnsModified;
+                    this.render();
+                }
             },
 
             /**
@@ -74,18 +80,18 @@ define(
              * to select it.
              */
             saveView: function () {
-                var gridAlias = this.getRoot().gridAlias;
-                var gridState = DatagridState.get(gridAlias, ['filters', 'columns']);
-                var saveRoute = Routing.generate('pim_datagrid_view_rest_save', {alias: gridAlias});
+                var gridState = DatagridState.get(this.getRoot().gridAlias, ['filters', 'columns']);
+                var saveRoute = Routing.generate('pim_datagrid_view_rest_save', {alias: this.getRoot().gridAlias});
+
                 var currentView = _.extend({}, this.getRoot().currentView);
                 currentView.filters = gridState.filters;
                 currentView.columns = gridState.columns;
 
                 $.post(saveRoute, {view: currentView}, function (response) {
                     if (response && response.errors && response.errors.length) {
-                        _.each(response.errors, function(error) {
+                        _.each(response.errors, function (error) {
                             messenger.notificationFlashMessage('error', error);
-                        })
+                        });
                     } else if (response && response.id) {
                         this.getRoot().trigger('grid:view-selector:view-saved', response.id);
                     }

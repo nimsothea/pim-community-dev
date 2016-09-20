@@ -146,9 +146,9 @@ define(
                      * Initialize the select2 with current selected view. If no current view is selected,
                      * we select the user's one. If he doesn't have one, we create one for him!
                      */
-                    initSelection : function (element, callback) {
+                    initSelection: function (element, callback) {
                         var activeViewId = DatagridState.get(this.gridAlias, 'view');
-                        var initView = null;
+                        var initView = this.defaultUserView;
                         var deferred = $.Deferred();
 
                         if (activeViewId) {
@@ -162,7 +162,6 @@ define(
                                     }
                                 }.bind(this));
                         } else if (initView) {
-                            initView = this.defaultUserView;
                             initView.text = initView.label;
 
                             deferred.resolve(initView);
@@ -171,6 +170,12 @@ define(
                         }
 
                         deferred.then(function (initView) {
+                            DatagridState.set(this.gridAlias, {
+                                view: initView.id,
+                                filters: initView.filters,
+                                columns: initView.columnsOrder
+                            });
+
                             this.currentView = initView;
                             callback(initView);
                             this.getRoot().trigger('grid:view-selector:initialized', initView);
@@ -198,7 +203,7 @@ define(
                 return {
                     id: 0,
                     text: 'Default view',   // TODO: translation
-                    order: this.defaultColumns,
+                    columnsOrder: this.defaultColumns,
                     filters: ''
                 };
             },
@@ -218,7 +223,7 @@ define(
                 choices.push({
                     id: 0,
                     text: 'Default view',   // TODO: translation
-                    order: this.defaultColumns,
+                    columnsOrder: this.defaultColumns,
                     filters: ''
                 });
 
@@ -243,9 +248,11 @@ define(
              */
             onViewCreated: function (viewId) {
                 FetcherRegistry.getFetcher('datagrid-view').clear();
-                FetcherRegistry.getFetcher('datagrid-view').fetch(viewId, {alias: this.gridAlias}).then(function (view) {
-                    this.selectView(view);
-                }.bind(this));
+                FetcherRegistry.getFetcher('datagrid-view')
+                    .fetch(viewId, {alias: this.gridAlias})
+                    .then(function (view) {
+                        this.selectView(view);
+                    }.bind(this));
             },
 
             /**
@@ -255,10 +262,7 @@ define(
              * @param {int} viewId
              */
             onViewSaved: function (viewId) {
-                FetcherRegistry.getFetcher('datagrid-view').clear();
-                FetcherRegistry.getFetcher('datagrid-view').fetch(viewId, {alias: this.gridAlias}).then(function (view) {
-                    this.selectView(view);
-                }.bind(this));
+                this.onViewCreated(viewId);
             },
 
             /**
@@ -279,7 +283,7 @@ define(
                 DatagridState.set(this.gridAlias, {
                     view: view.id,
                     filters: view.filters,
-                    columns: view.order
+                    columns: view.columnsOrder
                 });
 
                 this.currentView = view;

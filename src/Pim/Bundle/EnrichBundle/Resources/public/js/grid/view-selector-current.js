@@ -2,7 +2,7 @@
 
 /**
  * Current selection in the view-selector.
- * This view is used to display the selected view in the select2 module.
+ * This view is used to display the current selected view in the select2 module.
  *
  * @author    Adrien Petremann <adrien.petremann@akeneo.com>
  * @copyright 2016 Akeneo SAS (http://www.akeneo.com)
@@ -28,6 +28,9 @@ define(
             datagridView: null,
             dirty: false,
 
+            /**
+             * {@inheritdoc}
+             */
             configure: function (datagridView) {
                 this.datagridView = datagridView;
 
@@ -51,17 +54,26 @@ define(
             },
 
             /**
-             * Method called on datagrid state change (when columns or filters are modified)
+             * Method called on datagrid state change (when columns or filters are modified).
+             * Set the state to dirty if it's the case then re-render this extension.
              *
              * @param {Object} datagridState
              */
             onDatagridStateChange: function (datagridState) {
                 var currentView = this.getRoot().currentView;
-                var currentViewExists = null !== currentView && 0 != currentView.id;
-                var filtersModified = currentView.filters != datagridState.filters || currentView.order != datagridState.columns;
-                var defaultValues = ('' == datagridState.filters) && (this.getRoot().defaultColumns == datagridState.columns);
+                var currentViewExists = null !== currentView && 0 !== currentView.id;
 
-                this.dirty = (currentViewExists && filtersModified) || (!defaultValues && !currentViewExists);
+                var filtersModified = currentView.filters !== datagridState.filters;
+                var columnsModified = currentView.columnsOrder !== datagridState.columns;
+
+                if (currentViewExists) {
+                    this.dirty = filtersModified || columnsModified;
+                } else {
+                    var isDefaultFilters = ('' === datagridState.filters);
+                    var isDefaultColumns = (this.getRoot().defaultColumns === datagridState.columns);
+                    this.dirty = !isDefaultColumns || !isDefaultFilters;
+                }
+
                 this.render();
             }
         });

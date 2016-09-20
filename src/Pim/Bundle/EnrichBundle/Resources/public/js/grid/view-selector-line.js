@@ -2,7 +2,8 @@
 
 /**
  * Line for view selector.
- * This view is used to display a datagrid view line in the view-selector select2 module.
+ * This view is used to display a datagrid view line in list of the
+ * view-selector select2 module.
  *
  * @author    Adrien Petremann <adrien.petremann@akeneo.com>
  * @copyright 2016 Akeneo SAS (http://www.akeneo.com)
@@ -27,6 +28,9 @@ define(
             template: _.template(template),
             datagridView: null,
 
+            /**
+             * {@inheritdoc}
+             */
             configure: function (datagridView) {
                 this.datagridView = datagridView;
 

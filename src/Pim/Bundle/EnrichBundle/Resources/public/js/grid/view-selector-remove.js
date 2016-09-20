@@ -1,8 +1,9 @@
 'use strict';
 
 /**
- * Datagrid view remover extension for the Datagrid View Selector.
- * It displays a Remove button to remove the current view.
+ * Remove extension for the Datagrid View Selector.
+ * It displays a button near the selector to allow the user to remove the current selected view
+ * of the Datagrid View Selector.
  *
  * @author    Adrien Pétremann <adrien.petremann@akeneo.com>
  * @copyright 2016 Akeneo SAS (http://www.akeneo.com)
@@ -60,7 +61,7 @@ define(
              * @param {Object} view
              */
             onSelectorInitialized: function (view) {
-                this.hidden = view.id == 0;
+                this.hidden = view.id === 0;
                 this.render();
             },
 
@@ -68,7 +69,7 @@ define(
              * Prompt the datagrid view deletion modal.
              */
             promptDeletion: function () {
-                Dialog.confirm('SUPPRIMER?', 'DELETE', function() {
+                Dialog.confirm('SUPPRIMER?', 'DELETE', function () {
                     this.removeView();
                 }.bind(this));
             },
@@ -83,7 +84,7 @@ define(
                 $.ajax({
                     url: removeRoute,
                     type: 'DELETE',
-                    success: function() {
+                    success: function () {
                         this.getRoot().trigger('grid:view-selector:view-removed');
                     }.bind(this),
                     error: function (response) {

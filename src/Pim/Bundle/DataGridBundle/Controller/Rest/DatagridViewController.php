@@ -154,7 +154,7 @@ class DatagridViewController
 
             if ($creation) {
                 $request->getSession()->getFlashBag()
-                    ->add('success', new Message('flash.datagrid view.created'));
+                    ->add('success', new Message('grid.view_selector.flash.created'));
             }
 
             return new JsonResponse(['id' => $datagridView->getId()]);
@@ -175,12 +175,12 @@ class DatagridViewController
         $view = $this->datagridViewRepo->findOneBy(['owner' => $user, 'id' => $identifier]);
 
         if ($view === null) {
-            return new JsonResponse(['error' => $this->translator->trans('flash.datagrid view.not removable')], 404);
+            return new JsonResponse(['error' => $this->translator->trans('grid.view_selector.flash.not_removable')], 404);
         }
 
         $this->datagridViewManager->remove($view);
         $request->getSession()->getFlashBag()
-            ->add('success', new Message('flash.datagrid view.removed'));
+            ->add('success', new Message('grid.view_selector.flash.removed'));
 
         return new JsonResponse('', 204);
     }

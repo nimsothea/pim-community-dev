@@ -16,21 +16,21 @@
 
     {% if not hasDefaultView %}
         <option value="0" data-default="1" data-columns="{{ defaultViewColumns|join(',') }}">
-            {{- 'datagrid_view.default'|trans -}}
+            {{- 'grid.view-selector.default_view'|trans -}}
         </option>
     {% endif %}
 </select>
 
 <a id="update-view" class="muted hide" href="javascript:void(0);">
-    <i class="icon-ok" data-toggle="tooltip" data-placement="right" data-original-title="{{ 'datagrid_view.save_changes'|trans }}"></i>
+    <i class="icon-ok" data-toggle="tooltip" data-placement="right" data-original-title="{{ 'grid.view_selector.save_changes'|trans }}"></i>
 </a>
 
 <a id="remove-view" class="muted hide" href="javascript:void(0);">
-    <i class="icon-trash" data-toggle="tooltip" data-placement="right" data-original-title="{{ 'datagrid_view.remove'|trans }}"></i>
+    <i class="icon-trash" data-toggle="tooltip" data-placement="right" data-original-title="{{ 'grid.view_selector.remove'|trans }}"></i>
 </a>
 
 <a id="create-view" class="muted" href="javascript:void(0);">
-    <i class="icon-plus" data-toggle="tooltip" data-placement="right" data-original-title="{{ 'datagrid_view.create'|trans }}"></i>
+    <i class="icon-plus" data-toggle="tooltip" data-placement="right" data-original-title="{{ 'grid.view_selector.create'|trans }}"></i>
 </a>
 
 <div id="view-selector-test"></div>
@@ -109,7 +109,7 @@ require(
         var $removeLink = $('#remove-view');
         if ($activeView.data('removable')) {
             $removeLink.removeClass('hide').on('click', function() {
-                Dialog.confirm('{{ 'confirmation.remove.datagrid view'|trans }}', '{{ 'confirmation.delete'|trans }}', function() {
+                Dialog.confirm('{{ 'grid.view_selector.confirmation.remove'|trans }}', '{{ 'grid.view_selector.confirmation.delete'|trans }}', function() {
                     $.ajax({
                         url: Routing.generate('pim_datagrid_view_remove', { id: activeViewId }),
                         type: 'POST',
@@ -130,7 +130,7 @@ require(
 
         var opts = {
             title: truncateTitle(activeViewLabel),
-            placeholder: '{{ 'Search'|trans }}',
+            placeholder: '{{ 'grid.view_selector.search'|trans }}',
             header: '',
             height: 175,
             minWidth: 225,
@@ -181,7 +181,7 @@ require(
         var $openButton = $('button.pimmultiselect').addClass('btn btn-group').css({
             'margin-top': '-6px',
             'margin-left': '10px'
-        }).prepend($('<span>', { 'text': '{{ 'datagrid_view.views'|trans }}', 'class': 'pull-left buffer-small-right' }).css({
+        }).prepend($('<span>', { 'text': '{{ 'grid.view_selector.views'|trans }}', 'class': 'pull-left buffer-small-right' }).css({
             'margin-right': '10px',
             'border-right': '1px solid #ccc'
         }));
@@ -197,14 +197,14 @@ require(
                 $activeView.data('filters', state.filters);
                 $activeView.data('columns', state.columns);
                 handleStateChange();
-                messenger.notificationFlashMessage('success', '{{ 'flash.datagrid view.updated'|trans }}');
+                messenger.notificationFlashMessage('success', '{{ 'grid.view_selector.flash.updated'|trans }}');
             });
         });
 
         var promptForLabel = function() {
-            var content = '<input name="label" id="view-label" type="text" placeholder="{{ 'datagrid_view.placeholder'|trans }}">';
+            var content = '<input name="label" id="view-label" type="text" placeholder="{{ 'grid.view_selector.placeholder'|trans }}">';
             var label = null;
-            Dialog.confirm(content, '{{ 'datagrid_view.choose_label'|trans }}', function() {
+            Dialog.confirm(content, '{{ 'grid.view_selector.choose_label'|trans }}', function() {
                 $('#{{ form.label.vars.id }}').val(label);
                 submitForm();
             });

@@ -1,13 +1,14 @@
 'use strict';
 
 /**
- * Add extension for the Datagrid View Selector.
- * It displays a button near the selector to allow the user to create a view from the current
+ * Footer extension for the Datagrid View Selector.
+ *
+ * Contains a "create" button to allow the user to create a view from the current
  * state of the grid (regarding filters and columns).
  *
- * @author    Adrien Pétremann <adrien.petremann@akeneo.com>
+ * @author    Adrien Petremann <adrien.petremann@akeneo.com>
  * @copyright 2016 Akeneo SAS (http://www.akeneo.com)
- * @license   http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 define(
     [
@@ -15,7 +16,7 @@ define(
         'underscore',
         'oro/translator',
         'pim/form',
-        'text!pim/template/grid/view-selector-add',
+        'text!pim/template/grid/view-selector-footer',
         'pim/dialog',
         'routing',
         'pim/datagrid/state',
@@ -34,6 +35,8 @@ define(
     ) {
         return BaseForm.extend({
             template: _.template(template),
+            buttonTitle: '[create]',
+
             events: {
                 'click [data-action="prompt-creation"]': 'promptCreation'
             },
@@ -41,20 +44,20 @@ define(
             /**
              * {@inheritdoc}
              */
-            configure: function () {
-            },
-
-            /**
-             * {@inheritdoc}
-             */
             render: function () {
-                this.$el.html(this.template());
+                this.$el.html(this.template({
+                    buttonTitle: __('Create')
+                }));
+
+                return this;
             },
 
             /**
              * Prompt the view creation modal.
              */
             promptCreation: function () {
+                this.getRoot().trigger('grid:view-selector:close-selector');
+
                 var content = '<input name="label" id="view-label" type="text" placeholder="Name of new view">';
                 var label = null;
 

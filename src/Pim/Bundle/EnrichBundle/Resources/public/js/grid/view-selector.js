@@ -15,6 +15,7 @@ define(
         'backbone',
         'pim/form',
         'pim/grid/view-selector-line',
+        'pim/grid/view-selector-footer',
         'text!pim/template/grid/view-selector',
         'pim/initselect2',
         'pim/datagrid/state',
@@ -29,6 +30,7 @@ define(
         Backbone,
         BaseForm,
         ViewSelectorLine,
+        ViewSelectorFooter,
         template,
         initSelect2,
         DatagridState,
@@ -45,6 +47,7 @@ define(
             defaultColumns: [],
             defaultUserView: null,
             gridAlias: null,
+            $select2Instance: null,
 
             /**
              * {@inheritdoc}
@@ -57,6 +60,7 @@ define(
                 this.listenTo(this.getRoot(), 'grid:view-selector:view-created', this.onViewCreated.bind(this));
                 this.listenTo(this.getRoot(), 'grid:view-selector:view-saved', this.onViewSaved.bind(this));
                 this.listenTo(this.getRoot(), 'grid:view-selector:view-removed', this.onViewRemoved.bind(this));
+                this.listenTo(this.getRoot(), 'grid:view-selector:close-selector', this.closeSelect2.bind(this));
 
                 return $.when(
                     FetcherRegistry.getFetcher('datagrid-view').defaultColumns(this.gridAlias),
@@ -85,8 +89,8 @@ define(
                 var $select = this.$('input[type="hidden"]');
 
                 var opts = {
-                    dropdownCssClass: 'bigdrop view-selector',
-                    width: '250px',
+                    dropdownCssClass: 'bigdrop grid-view-selector',
+                    closeOnSelect: false,
 
                     /**
                      * Format result (datagrid view list) method of select2.
@@ -94,6 +98,7 @@ define(
                      */
                     formatResult: function (item, $container) {
                         FormBuilder.buildForm('pim-grid-view-selector-line').then(function (form) {
+                            form.setParent(this);
                             return form.configure(item).then(function () {
                                 $container.append(form.render().$el);
                             });
@@ -126,7 +131,7 @@ define(
                             FetcherRegistry.getFetcher('datagrid-view').search(searchParameters).then(function (views) {
                                 var choices = this.toSelect2Format(views);
 
-                                if (page === 1) {
+                                if (page === 1 && !options.term) {
                                     choices = this.ensureDefaultView(choices);
                                 }
 
@@ -163,18 +168,19 @@ define(
                                 }.bind(this));
                         } else if (initView) {
                             initView.text = initView.label;
-
                             deferred.resolve(initView);
                         } else {
                             deferred.resolve(this.getDefaultView());
                         }
 
                         deferred.then(function (initView) {
-                            DatagridState.set(this.gridAlias, {
-                                view: initView.id,
-                                filters: initView.filters,
-                                columns: initView.columnsOrder
-                            });
+                            if (this.defaultUserView && initView.id === this.defaultUserView.id) {
+                                DatagridState.set(this.gridAlias, {
+                                    view: initView.id,
+                                    filters: initView.filters,
+                                    columns: initView.columnsOrder
+                                });
+                            }
 
                             this.currentView = initView;
                             callback(initView);
@@ -183,14 +189,36 @@ define(
                     }.bind(this)
                 };
 
-                //opts = $.extend(true, {}, this.config.select2, opts);
-                $select = initSelect2.init($select, opts);
+                this.$select2Instance = initSelect2.init($select, opts);
+
+                var select2 = this.$select2Instance.data('select2');
+                select2.onSelect = (function(fn) {
+                    return function(data, options) {
+                        var target;
+
+                        if (options != null) {
+                            target = $(options.target);
+                        }
+
+                        if (target && !target.hasClass('select2-result-label-view')) {
+                            //alert('click!');
+                        } else {
+                            return fn.apply(this, arguments);
+                        }
+                    }
+                })(select2.onSelect);
 
                 // On select2 "selecting" event, we bypass the selection to handle it ourself.
-                $select.on('select2-selecting', function (event) {
+                this.$select2Instance.on('select2-selecting', function (event) {
                     var view = event.object;
-
                     this.selectView(view);
+                }.bind(this));
+
+                var $menu = this.$('.select2-drop');
+
+                FormBuilder.build('pim-grid-view-selector-footer').then(function (form) {
+                    form.setParent(this);
+                    $menu.append(form.render().$el);
                 }.bind(this));
             },
 
@@ -202,7 +230,7 @@ define(
             getDefaultView: function () {
                 return {
                     id: 0,
-                    text: 'Default view',   // TODO: translation
+                    text: __('datagrid_view.default'),   // TODO: translation
                     columnsOrder: this.defaultColumns,
                     filters: ''
                 };
@@ -220,12 +248,7 @@ define(
                     return choices;
                 }
 
-                choices.push({
-                    id: 0,
-                    text: 'Default view',   // TODO: translation
-                    columnsOrder: this.defaultColumns,
-                    filters: ''
-                });
+                choices.push(this.getDefaultView());
 
                 return choices;
             },
@@ -272,6 +295,15 @@ define(
             onViewRemoved: function () {
                 FetcherRegistry.getFetcher('datagrid-view').clear();
                 this.selectView(this.getDefaultView());
+            },
+
+            /**
+             * Close the Select2 instance of this View Selector
+             */
+            closeSelect2: function () {
+                if (null !== this.$select2Instance) {
+                    this.$select2Instance.select2('close');
+                }
             },
 
             /**

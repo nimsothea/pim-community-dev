@@ -1,21 +1,16 @@
 'use strict';
 
 /**
- * Remove extension for the Datagrid View Selector.
- * It displays a button near the selector to allow the user to remove the current selected view
- * of the Datagrid View Selector.
- *
- * @author    Adrien Pétremann <adrien.petremann@akeneo.com>
+ * @author    Adrien Petremann <adrien.petremann@akeneo.com>
  * @copyright 2016 Akeneo SAS (http://www.akeneo.com)
- * @license   http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 define(
     [
         'jquery',
         'underscore',
-        'oro/translator',
         'pim/form',
-        'text!pim/template/grid/view-selector-remove',
+        'text!pim/template/grid/view-selector-line-remove',
         'pim/dialog',
         'routing',
         'oro/messenger'
@@ -23,7 +18,6 @@ define(
     function (
         $,
         _,
-        __,
         BaseForm,
         template,
         Dialog,
@@ -32,7 +26,8 @@ define(
     ) {
         return BaseForm.extend({
             template: _.template(template),
-            hidden: true,
+            tagName: 'span',
+            className: 'remove-button pull-right',
             events: {
                 'click [data-action="prompt-deletion"]': 'promptDeletion'
             },
@@ -40,46 +35,29 @@ define(
             /**
              * {@inheritdoc}
              */
-            configure: function () {
-                this.listenTo(this.getRoot(), 'grid:view-selector:initialized', this.onSelectorInitialized.bind(this));
-
-                return BaseForm.prototype.configure.apply(this, arguments);
-            },
-
-            /**
-             * {@inheritdoc}
-             */
             render: function () {
                 this.$el.html(this.template({
-                    hidden: this.hidden
+                    hidden: this.getParent().datagridView.id === 0
                 }));
-            },
-
-            /**
-             * Method called when the view selector has been initialized with a view.
-             *
-             * @param {Object} view
-             */
-            onSelectorInitialized: function (view) {
-                this.hidden = view.id === 0;
-                this.render();
             },
 
             /**
              * Prompt the datagrid view deletion modal.
              */
             promptDeletion: function () {
+                this.getRoot().trigger('grid:view-selector:close-selector');
+
                 Dialog.confirm('SUPPRIMER?', 'DELETE', function () {
                     this.removeView();
                 }.bind(this));
             },
 
             /**
-             * Remove the current Datagrid view and triggers an event to the parent.
+             * Remove the Datagrid View of this line and triggers an event to the parent.
              */
             removeView: function () {
-                var currentView = this.getRoot().currentView;
-                var removeRoute = Routing.generate('pim_datagrid_view_rest_remove', {identifier: currentView.id});
+                var lineView = this.getParent().datagridView;
+                var removeRoute = Routing.generate('pim_datagrid_view_rest_remove', {identifier: lineView.id});
 
                 $.ajax({
                     url: removeRoute,

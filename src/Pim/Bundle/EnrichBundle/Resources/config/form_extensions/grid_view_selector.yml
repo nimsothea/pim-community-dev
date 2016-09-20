@@ -2,30 +2,20 @@ extensions:
     pim-grid-view-selector:
         module: pim/grid/view-selector
 
+    pim-grid-view-selector-footer:
+        module: pim/grid/view-selector-footer
+
     pim-grid-view-selector-line:
         module: pim/grid/view-selector-line
 
     pim-grid-view-selector-current:
         module: pim/grid/view-selector-current
 
-    # TEST
-    pim-grid-view-selector-line-before:
-        module: pim/grid/view-selector-line-before
+    pim-grid-view-selector-line-remove:
+        module: pim/grid/view-selector-line-remove
         parent: pim-grid-view-selector-line
-        targetZone: before
+        targetZone: after
         position: 100
-
-    pim-grid-view-selector-add:
-        module: pim/grid/view-selector-add
-        parent: pim-grid-view-selector
-        targetZone: buttons
-        position: 120
-
-    pim-grid-view-selector-remove:
-        module: pim/grid/view-selector-remove
-        parent: pim-grid-view-selector
-        targetZone: buttons
-        position: 110
 
     pim-grid-view-selector-save:
         module: pim/grid/view-selector-save

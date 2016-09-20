@@ -35,6 +35,8 @@ define(
         return BaseForm.extend({
             template: _.template(template),
             hidden: true,
+            tagName: 'span',
+            className: 'save-button',
             events: {
                 'click [data-action="save"]': 'saveView'
             },
@@ -55,6 +57,8 @@ define(
                 this.$el.html(this.template({
                     dirty: this.dirty
                 }));
+
+                this.$('[data-toggle="tooltip"]').tooltip();
             },
 
             /**

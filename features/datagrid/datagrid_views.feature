@@ -15,7 +15,7 @@ Feature: Datagrid views
     And I am on the products page
 
   Scenario: Successfully display the default view
-    Then I should see the text "Views Default view"
+    Then I should see the text "Default view"
 
   Scenario: Successfully create a new view
     Given I filter by "family" with operator "in list" and value "Sneakers"
@@ -23,7 +23,7 @@ Feature: Datagrid views
       | label | Sneakers only |
     Then I should be on the products page
     And I should see the flash message "Datagrid view successfully created"
-    And I should see the text "Views Sneakers only"
+    And I should see the text "Sneakers only"
     And I should see products purple-sneakers and black-sneakers
     But I should not see product black-boots
 
@@ -40,7 +40,7 @@ Feature: Datagrid views
       | label | Some shoes |
     Then I should be on the products page
     And I should see the flash message "Datagrid view successfully created"
-    And I should see the text "Views Some shoes"
+    And I should see the text "Some shoes"
     And I should see product black-boots
     But I should not see products purple-sneakers and black-sneakers
     When I hide the filter "family"
@@ -49,7 +49,7 @@ Feature: Datagrid views
     And I update the view
     And I apply the "Some shoes" view
     Then I should be on the products page
-    And I should see the text "Views Some shoes"
+    And I should see the text "Some shoes"
     And I should see products purple-sneakers and black-sneakers
     But I should not see product black-boots
 
@@ -59,14 +59,14 @@ Feature: Datagrid views
       | label | Boots only |
     Then I should be on the products page
     And I should see the flash message "Datagrid view successfully created"
-    And I should see the text "Views Boots only"
+    And I should see the text "Boots only"
     And I should see product black-boots
     But I should not see products purple-sneakers and black-sneakers
-    When I delete the view
+    When I delete the view "Boots only"
     And I confirm the deletion
     Then I should be on the products page
     And I should see the flash message "Datagrid view successfully removed"
-    And I should see the text "Views Default view"
+    And I should see the text "Default view"
     But I should not see "Boots only"
     And I should see products black-boots, purple-sneakers and black-sneakers
 
@@ -101,7 +101,7 @@ Feature: Datagrid views
     When I logout
     And I am logged in as "Mary"
     And I am on the products page
-    Then I should see the text "Views Sneakers only"
+    Then I should see the text "Sneakers only"
     And I should see products purple-sneakers and black-sneakers
     But I should not see product black-boots
     When I press the "Reset" button
@@ -123,10 +123,10 @@ Feature: Datagrid views
     And I press the "Save" button
     Then I should not see the text "There are unsaved changes."
     When I am on the products page
-    Then I should see the text "Views Sneakers only"
-    When I delete the view
+    Then I should see the text "Sneakers only"
+    When I delete the view "Sneakers only"
     And I confirm the deletion
     Then I should be on the products page
     And I should see the flash message "Datagrid view successfully removed"
-    And I should see the text "Views Default view"
+    And I should see the text "Default view"
     But I should not see the text "Sneakers only"

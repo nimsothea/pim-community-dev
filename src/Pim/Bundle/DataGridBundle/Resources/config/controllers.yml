@@ -38,13 +38,7 @@ services:
         scope: request
         class: '%pim_datagrid.controller.datagrid_view.class%'
         arguments:
-            - '@request'
             - '@templating'
-            - '@security.token_storage'
-            - '@form.factory'
-            - '@validator'
-            - '@translator'
-            - '@pim_datagrid.manager.datagrid_view'
 
     pim_datagrid.controller.mass_action:
         scope: request

@@ -1,6 +1,10 @@
 'use strict';
 
 /**
+ * Extension module for a dropdown line in the Datagrid View Selector.
+ * Displays a button beside the attached view in the list to allow the user
+ * to remove the view.
+ *
  * @author    Adrien Petremann <adrien.petremann@akeneo.com>
  * @copyright 2016 Akeneo SAS (http://www.akeneo.com)
  * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)

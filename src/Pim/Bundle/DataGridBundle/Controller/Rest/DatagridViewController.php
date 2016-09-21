@@ -16,7 +16,8 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
- * Datagrid views REST controller
+ * REST Controller for Datagrid Views.
+ * Handle basic CRUD actions.
  *
  * @author    Adrien Pétremann <adrien.petremann@akeneo.com>
  * @copyright 2016 Akeneo SAS (http://www.akeneo.com)
@@ -73,7 +74,8 @@ class DatagridViewController
     }
 
     /**
-     * Get the datagrid views collection.
+     * Return the list of all Datagrid Views that belong to the current user for the given $alias grid.
+     * Response data is in Json format and is paginated.
      *
      * @param Request $request
      * @param string  $alias
@@ -88,31 +90,45 @@ class DatagridViewController
         $term = $request->query->get('search', '');
 
         $views = $this->datagridViewRepo->findDatagridViewBySearch($user, $alias, $term, $options);
-        $normalizedViews = $this->normalizer->normalize($views, 'array');
+        $normalizedViews = $this->normalizer->normalize($views, 'json');
 
         return new JsonResponse($normalizedViews);
     }
 
     /**
-     * Get the datagrid view by its $id.
+     * Return the Datagrid View that belongs to the current user for the given $alias grid
+     * and has the given $identifier.
+     * Response data is in Json format, 404 is sent if there is no result.
      *
-     * @param Request $request
-     * @param string  $alias
-     * @param string  $identifier
+     * @param string $alias
+     * @param string $identifier
      *
      * @return JsonResponse
      */
-    public function getAction(Request $request, $alias, $identifier)
+    public function getAction($alias, $identifier)
     {
         $user = $this->tokenStorage->getToken()->getUser();
+        $view = $this->datagridViewRepo->findOneBy([
+            'owner'         => $user,
+            'datagridAlias' => $alias,
+            'id'            => $identifier
+        ]);
 
-        $view = $this->datagridViewRepo->findOneBy(['owner' => $user, 'datagridAlias' => $alias, 'id' => $identifier]);
-        $normalizedView = $this->normalizer->normalize($view, 'array', []);
+        if (null === $view) {
+            return new JsonResponse('', 404);
+        }
+
+        $normalizedView = $this->normalizer->normalize($view, 'json');
 
         return new JsonResponse($normalizedView);
     }
 
     /**
+     * Save the Datagrid View received through the $request for the grid with the given $alias.
+     *
+     * If any errors occur during the writing process, a Json response is sent with {'errors' => 'Error message'}.
+     * If success, return a Json response with the id of the saved View.
+     *
      * @param Request $request
      * @param string  $alias
      *
@@ -162,7 +178,10 @@ class DatagridViewController
     }
 
     /**
-     * Remove a datagrid view
+     * Remove the Datagrid View with the given $identifier.
+     *
+     * If any errors occur during the process, a Json response is sent with {'errors' => 'Error message'}.
+     * If success, return an empty Json response with code 204 (No content).
      *
      * @param Request $request
      * @param string  $identifier
@@ -175,7 +194,9 @@ class DatagridViewController
         $view = $this->datagridViewRepo->findOneBy(['owner' => $user, 'id' => $identifier]);
 
         if ($view === null) {
-            return new JsonResponse(['error' => $this->translator->trans('grid.view_selector.flash.not_removable')], 404);
+            return new JsonResponse([
+                'error' => $this->translator->trans('grid.view_selector.flash.not_removable')
+            ], 404);
         }
 
         $this->datagridViewManager->remove($view);
@@ -186,14 +207,16 @@ class DatagridViewController
     }
 
     /**
-     * Get the default view columns for a grid.
+     * Return the default columns for the grid with the given $alias.
+     * Response data is in Json format.
      *
-     * @param Request $request
-     * @param string  $alias
+     * Eg.: ['sku', 'name', 'brand']
+     *
+     * @param string $alias
      *
      * @return JsonResponse
      */
-    public function defaultViewColumnsAction(Request $request, $alias)
+    public function defaultViewColumnsAction($alias)
     {
         $columns = array_keys($this->datagridViewManager->getColumnChoices($alias, true));
 
@@ -201,7 +224,8 @@ class DatagridViewController
     }
 
     /**
-     * Get the default datagrid view for current user.
+     * Return the current user default Datagrid View object for the grid with the given $alias.
+     * Response data is in Json format.
      *
      * @param string $alias
      *
@@ -213,7 +237,7 @@ class DatagridViewController
         $view = $user->getDefaultGridView($alias);
 
         if (null !== $view) {
-            $view = $this->normalizer->normalize($view, 'array', []);
+            $view = $this->normalizer->normalize($view, 'json');
         }
 
         return new JsonResponse(['view' => $view]);

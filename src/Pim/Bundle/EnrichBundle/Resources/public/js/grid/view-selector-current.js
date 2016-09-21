@@ -1,8 +1,8 @@
 'use strict';
 
 /**
- * Current selection in the view-selector.
- * This view is used to display the current selected view in the select2 module.
+ * Module to display the current view in the Datagrid View Selector.
+ * This module accepts extensions to display more info beside the view.
  *
  * @author    Adrien Petremann <adrien.petremann@akeneo.com>
  * @copyright 2016 Akeneo SAS (http://www.akeneo.com)

@@ -1,7 +1,10 @@
 'use strict';
 
 /**
- * View selector for datagrid
+ * Main module for the Datagrid View Selector.
+ * Mainly composed by a Select2 component with several extension points.
+ *
+ * Allow the user to search & select a Grid View in a list.
  *
  * @author    Adrien Pétremann <adrien.petremann@akeneo.com>
  * @copyright 2016 Akeneo SAS (http://www.akeneo.com)
@@ -83,7 +86,7 @@ define(
             },
 
             /**
-             * Initialize select2 and format elements.
+             * Initialize the Select2 component and format elements.
              */
             initializeSelectWidget: function () {
                 var $select = this.$('input[type="hidden"]');
@@ -149,7 +152,7 @@ define(
 
                     /**
                      * Initialize the select2 with current selected view. If no current view is selected,
-                     * we select the user's one. If he doesn't have one, we create one for him!
+                     * we select the user's one. If he doesn't have one, we create a default one for him!
                      */
                     initSelection: function (element, callback) {
                         var activeViewId = DatagridState.get(this.gridAlias, 'view');
@@ -157,15 +160,15 @@ define(
                         var deferred = $.Deferred();
 
                         if (activeViewId) {
-                            FetcherRegistry.getFetcher('datagrid-view').fetch(activeViewId, {alias: this.gridAlias})
-                                .then(function (view) {
-                                    if (_.has(view, 'id')) {
+                            if ('0' === activeViewId) {
+                                deferred.resolve(this.getDefaultView());
+                            } else {
+                                FetcherRegistry.getFetcher('datagrid-view').fetch(activeViewId, {alias: this.gridAlias})
+                                    .then(function (view) {
                                         view.text = view.label;
                                         deferred.resolve(view);
-                                    } else {
-                                        deferred.resolve(this.getDefaultView());
-                                    }
-                                }.bind(this));
+                                    }.bind(this));
+                            }
                         } else if (initView) {
                             initView.text = initView.label;
                             deferred.resolve(initView);
@@ -174,13 +177,11 @@ define(
                         }
 
                         deferred.then(function (initView) {
-                            if (this.defaultUserView && initView.id === this.defaultUserView.id) {
-                                DatagridState.set(this.gridAlias, {
-                                    view: initView.id,
-                                    filters: initView.filters,
-                                    columns: initView.columnsOrder
-                                });
-                            }
+                            DatagridState.set(this.gridAlias, {
+                                view: initView.id,
+                                filters: initView.filters,
+                                columns: initView.columnsOrder
+                            });
 
                             this.currentView = initView;
                             callback(initView);
@@ -237,7 +238,7 @@ define(
             /**
              * Ensure given choices contain a default view if user doesn't have one.
              *
-             * @param choices
+             * @param {array} choices
              *
              * @return {array}
              */
@@ -307,7 +308,7 @@ define(
             /**
              * Method called when the user selects a view through this selector.
              *
-             * @param view The selected view
+             * @param {Object} view The selected view
              */
             selectView: function (view) {
                 DatagridState.set(this.gridAlias, {

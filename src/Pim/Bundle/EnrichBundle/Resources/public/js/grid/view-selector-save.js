@@ -2,7 +2,7 @@
 
 /**
  * Save extension for the Datagrid View Selector.
- * It displays a button near the selector to allow the user to save the actual modifications
+ * It displays a button near the selector to allow the user to save the current changes
  * to the current view.
  *
  * @author    Adrien Pétremann <adrien.petremann@akeneo.com>

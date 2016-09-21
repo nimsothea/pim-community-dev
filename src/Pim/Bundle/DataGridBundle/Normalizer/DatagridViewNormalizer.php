@@ -15,7 +15,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 class DatagridViewNormalizer implements NormalizerInterface
 {
     /** @var array */
-    protected $supportedFormat = ['array'];
+    protected $supportedFormat = ['json'];
 
     /**
      * {@inheritdoc}
@@ -26,11 +26,11 @@ class DatagridViewNormalizer implements NormalizerInterface
             'id'             => (int) $object->getId(),
             'owner_id'       => (int) $object->getOwner()->getId(),
             'label'          => (string) $object->getLabel(),
-            'type'           => $object->getType(),
+            'type'           => (string) $object->getType(),
             'datagrid_alias' => (string) $object->getDatagridAlias(),
             'columns'        => $object->getColumns(),
-            'filters'        => $object->getFilters(),
-            'columnsOrder'   => $object->getOrder(),
+            'filters'        => (string) $object->getFilters(),
+            'columnsOrder'   => (string) $object->getOrder(),
         ];
     }
 

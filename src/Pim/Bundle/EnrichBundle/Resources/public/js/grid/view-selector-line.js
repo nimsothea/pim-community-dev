@@ -1,9 +1,8 @@
 'use strict';
 
 /**
- * Line for view selector.
- * This view is used to display a datagrid view line in list of the
- * view-selector select2 module.
+ * Module to display a line in the Select2 dropdown of the Datagrid View Selector.
+ * This module accepts extensions to display more info beside the view.
  *
  * @author    Adrien Petremann <adrien.petremann@akeneo.com>
  * @copyright 2016 Akeneo SAS (http://www.akeneo.com)

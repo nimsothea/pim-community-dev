@@ -9,6 +9,7 @@ define(
     [
         'jquery',
         'underscore',
+        'oro/translator',
         'pim/form',
         'text!pim/template/grid/view-selector-line-remove',
         'pim/dialog',
@@ -18,6 +19,7 @@ define(
     function (
         $,
         _,
+        __,
         BaseForm,
         template,
         Dialog,
@@ -47,9 +49,13 @@ define(
             promptDeletion: function () {
                 this.getRoot().trigger('grid:view-selector:close-selector');
 
-                Dialog.confirm('SUPPRIMER?', 'DELETE', function () {
-                    this.removeView();
-                }.bind(this));
+                Dialog.confirm(
+                    __('grid.view_selector.confirmation.remove'),
+                    __('grid.view_selector.confirmation.delete'),
+                    function () {
+                        this.removeView();
+                    }.bind(this)
+                );
             },
 
             /**

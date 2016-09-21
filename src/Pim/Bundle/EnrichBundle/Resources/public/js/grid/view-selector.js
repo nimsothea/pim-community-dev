@@ -230,7 +230,7 @@ define(
             getDefaultView: function () {
                 return {
                     id: 0,
-                    text: __('datagrid_view.default'),   // TODO: translation
+                    text: __('grid.view_selector.default_view'),
                     columnsOrder: this.defaultColumns,
                     filters: ''
                 };

@@ -55,7 +55,8 @@ define(
              */
             render: function () {
                 this.$el.html(this.template({
-                    dirty: this.dirty
+                    dirty: this.dirty,
+                    label: __('grid.view_selector.save_changes')
                 }));
 
                 this.$('[data-toggle="tooltip"]').tooltip();

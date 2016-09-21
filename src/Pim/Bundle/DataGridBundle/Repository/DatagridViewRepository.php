@@ -2,7 +2,6 @@
 
 namespace Pim\Bundle\DataGridBundle\Repository;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityRepository;
 use Pim\Bundle\UserBundle\Entity\UserInterface;
 
@@ -46,21 +45,16 @@ class DatagridViewRepository extends EntityRepository implements DatagridViewRep
     /**
      * {@inheritdoc}
      */
-    public function findDatagridViewBySearch($term, UserInterface $user, $alias, array $options = [])
+    public function findDatagridViewBySearch(UserInterface $user, $alias, $term = '', array $options = [])
     {
         $options += ['limit' => 20, 'page' => 1];
+        $offset = (int) $options['limit'] * ((int) $options['page'] - 1);
 
         $qb = $this->findDatagridViewByUserAndAlias($user, $alias)
             ->andWhere('v.label LIKE :term')
-            ->setParameter('term', sprintf('%%%s%%', $term));
-
-        if (isset($options['limit'])) {
-            $qb->setMaxResults((int) $options['limit']);
-
-            if (isset($options['page'])) {
-                $qb->setFirstResult((int) $options['limit'] * ((int) $options['page'] - 1));
-            }
-        }
+            ->setParameter('term', sprintf('%%%s%%', $term))
+            ->setMaxResults((int) $options['limit'])
+            ->setFirstResult($offset);
 
         return $qb->getQuery()->execute();
     }

@@ -84,11 +84,11 @@ class DatagridViewController
     {
         $user = $this->tokenStorage->getToken()->getUser();
 
-        $options = $request->query->get('options', ['limit' => 20, 'page' => 1, ]);
+        $options = $request->query->get('options', ['limit' => 20, 'page' => 1]);
         $term = $request->query->get('search', '');
 
-        $views = $this->datagridViewRepo->findDatagridViewBySearch($term, $user, $alias, $options);
-        $normalizedViews = $this->normalizer->normalize($views, 'array', []);
+        $views = $this->datagridViewRepo->findDatagridViewBySearch($user, $alias, $term, $options);
+        $normalizedViews = $this->normalizer->normalize($views, 'array');
 
         return new JsonResponse($normalizedViews);
     }

@@ -88,7 +88,7 @@ define(
             initializeSelectWidget: function () {
                 var $select = this.$('input[type="hidden"]');
 
-                var opts = {
+                var options = {
                     dropdownCssClass: 'bigdrop grid-view-selector',
                     closeOnSelect: false,
 
@@ -189,23 +189,21 @@ define(
                     }.bind(this)
                 };
 
-                this.$select2Instance = initSelect2.init($select, opts);
+                this.$select2Instance = initSelect2.init($select, options);
 
                 var select2 = this.$select2Instance.data('select2');
-                select2.onSelect = (function(fn) {
-                    return function(data, options) {
-                        var target;
+                select2.onSelect = (function (fn) {
+                    return function (data, options) {
+                        var target = null;
 
-                        if (options != null) {
+                        if (options !== null) {
                             target = $(options.target);
                         }
 
-                        if (target && !target.hasClass('select2-result-label-view')) {
-                            //alert('click!');
-                        } else {
+                        if (null === target || target.hasClass('select2-result-label-view')) {
                             return fn.apply(this, arguments);
                         }
-                    }
+                    };
                 })(select2.onSelect);
 
                 // On select2 "selecting" event, we bypass the selection to handle it ourself.

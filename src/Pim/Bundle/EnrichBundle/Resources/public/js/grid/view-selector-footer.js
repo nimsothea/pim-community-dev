@@ -59,7 +59,7 @@ define(
                 this.getRoot().trigger('grid:view-selector:close-selector');
 
                 var placeholder = __('grid.view_selector.placeholder');
-                var content = '<input name="label" id="view-label" type="text" placeholder="'+placeholder+'">';
+                var content = '<input name="label" id="view-label" type="text" placeholder="' + placeholder + '">';
                 var label = null;
 
                 Dialog.confirm(content, __('grid.view_selector.choose_label'), function () {

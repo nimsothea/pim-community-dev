@@ -28,6 +28,8 @@ interface DatagridViewRepositoryInterface
      *
      * @param UserInterface $user
      * @param string        $alias
+     *
+     * @deprecated Please use DatagridViewRepositoryInterface::findDatagridViewBySearch instead
      */
     public function findDatagridViewByUserAndAlias(UserInterface $user, $alias);
 
@@ -36,12 +38,12 @@ interface DatagridViewRepositoryInterface
      * The search is applied with the given $term.
      * You can pass $options to add limit or page informations.
      *
-     * @param string        $term
      * @param UserInterface $user
      * @param string        $alias
+     * @param string        $term
      * @param array         $options
      *
      * @return ArrayCollection
      */
-    public function findDatagridViewBySearch($term, UserInterface $user, $alias, array $options = []);
+    public function findDatagridViewBySearch(UserInterface $user, $alias, $term = '', array $options = []);
 }
